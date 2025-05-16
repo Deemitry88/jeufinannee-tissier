@@ -15,7 +15,7 @@ screen_width = 1200
 screen_height = 600
 
 screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption('Jeu de Plateforme')
+pygame.display.set_caption('The Celestial Brothers')
 pygame.mixer.music.load("audio/music.wav")
 
 
@@ -223,29 +223,44 @@ class Spike(pygame.sprite.Sprite):
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load('image/goomba1.png')
-        self.image = pygame.transform.scale(self.image,(30,30))
+        self.imageslist = []
+        self.index = 0
+        self.counter = 0
+        for num in range(1,3):
+            img = pygame.image.load(f'image/goomba{num}.png')
+            img = pygame.transform.scale(img,(30,30))
+            self.imageslist.append(img)
+        self.image = self.imageslist[self.index]
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y-5
         self.move_direction = 1
         self.move_counter = 0
+        self.dead = False
 
     def update(self):
+        cooldown = 15
+        self.counter += 1
+        if self.counter > cooldown*2-1:
+            self.counter = 0
+        self.image = self.imageslist[self.counter//cooldown]
+
+        
         self.rect.x += self.move_direction
-        self.move_counter += 1
-        if self.move_counter > 50:
+        self.move_counter += 0.5
+        if abs(self.move_counter) > 25:
             self.move_direction *= -1
             self.move_counter = 0
         for enemy in goomba_group:
-            if player.rect.colliderect(enemy.rect):
+            if player.rect.colliderect(self.rect):
         # si le joueur touche le haut de l'ennemi et est en train de tomber
-                if player.rect.bottom <= enemy.rect.top + 10 and player.vel_y > 0:
+                if player.rect.bottom <= self.rect.top + 10 and player.vel_y > 0:
                     player.vel_y = -10  # effet rebond
-                    goomba_group.remove(enemy)  # ou enemy.kill() si tu utilises Sprite
+                    self.dead = True
+                    goomba_group.remove(self)  # ou enemy.kill() si tu utilises Sprite
                 else:
             # collision sur le côté = dégâts (à adapter selon ton système)
-                    if not player.invicibility:
+                    if not player.invicibility and not self.dead:
                         player.invicibility = True
                         player.health -= 1
                         print(player.health)
@@ -277,9 +292,9 @@ world_data = [
 [0,0,0,0,0,11,12,12,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 
-[2,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,5,0,0,0,6,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,1,7,0,0,0,6,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,9,10,15,15,15,8,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
+[3,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,5,0,0,0,6,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[6,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,1,7,0,0,0,6,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[8,10,0,0,16,0,0,0,0,0,0,16,0,0,0,0,8,9,10,15,15,15,8,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
 
 player = Player(100, screen_height - 130)
 goomba_group = pygame.sprite.Group()
