@@ -23,7 +23,7 @@ pygame.mixer.music.load("audio/music.wav")
 tile_size=25
 
 #Chargement du fond d'écran
-bg_img = pygame.image.load('background_ai.png')
+bg_img = pygame.image.load('background_ai2.png')
 bg_img1 = pygame.transform.scale(bg_img,(screen_width,screen_height))
 
 class Player():
