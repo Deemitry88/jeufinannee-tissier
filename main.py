@@ -23,7 +23,7 @@ hurtsound.set_volume(0.5)
 tile_size=25
 
 #Chargement du fond d'écran
-bg_img = pygame.image.load('/image/misc/background_ai.png')
+bg_img = pygame.image.load('image/misc/background_ai.png')
 bg_img1 = pygame.transform.scale(bg_img,(screen_width,screen_height))
 
 class Player():
