@@ -49,12 +49,19 @@ class Player():
         self.width = self.image.get_width()
         self.height = self.image.get_height()
         self.vel_y = 0
+        self.vel_x = 0
         self.jumped = False
         self.direction = 0
         self.health = 10
         self.invicibility = False
         self.current = 0
         self.onroof = False
+        self.pushed = False
+        self.goomba_direction = 0
+
+    def pushed_by(self,direction):
+        self.goomba_direction = direction
+        self.pushed = True
 
     def update(self):
         #Variables pour les déplacements
@@ -120,8 +127,18 @@ class Player():
             self.jumped = True
         if self.vel_y > 14:
             self.vel_y = 14
-        dy += self.vel_y
+        dy += self.vel_y 
 
+        if self.pushed:
+            if self.goomba_direction == 1:
+                dx += self.vel_x
+            else:
+                dx -= self.vel_x
+            if abs(self.vel_x) > 8:
+                self.vel_x = 0
+                self.pushed = False
+            self.vel_x += 1  
+    
         #Vérification des collisions
         for tile in world.tile_list:
             # test des collisions horizontales
@@ -261,13 +278,12 @@ class Enemy(pygame.sprite.Sprite):
                 else:
             # collision sur le côté = dégâts (à adapter selon ton système)
                     if not player.invicibility and not self.dead:
+                        player.pushed_by(self.move_direction)
+                        player.vel_y = -6
                         player.invicibility = True
                         player.health -= 1
                         print(player.health)
                         player.current = pygame.time.get_ticks()
-
-        
-
 
 
 world_data = [
@@ -292,9 +308,9 @@ world_data = [
 [0,0,0,0,0,11,12,12,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 
-[3,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,5,0,0,0,6,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[6,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,1,7,0,0,0,6,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[8,10,0,0,16,0,0,0,0,0,0,16,0,0,0,0,8,9,10,15,15,15,8,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
+[3,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,5,0,0,0,6,7,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[6,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,1,7,0,0,0,6,7,1,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[8,10,0,0,16,0,0,0,0,0,0,16,0,0,0,0,8,9,10,15,15,15,8,10,9,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
 
 player = Player(100, screen_height - 130)
 goomba_group = pygame.sprite.Group()
