@@ -33,13 +33,13 @@ class Player():
         self.index = 0
         self.counter = 0
         for num in range(1,4):
-            img_right = pygame.image.load(f'image/mario{num}.png')
+            img_right = pygame.image.load(f'image/entities/mario{num}.png')
             img_right = pygame.transform.scale(img_right, (40,40))
             #flip construit l'image symétrique par rapport à la verticale
             img_left = pygame.transform.flip(img_right, True, False)
             self.images_right.append(img_right)
             self.images_left.append(img_left)
-        self.img_hook = pygame.image.load(f'image/mariohook.png')
+        self.img_hook = pygame.image.load(f'image/entities/mariohook.png')
         self.img_hook = pygame.transform.scale(self.img_hook, (40,40))
         self.img_hook_left = pygame.transform.flip(self.img_hook, True, False)
         self.image = self.images_right[self.index]
@@ -192,7 +192,7 @@ class World():
     def __init__(self,data):
         self.tile_list = []
         #chargement des images
-        murs = {x: pygame.image.load(f'image/mur{x}.png') for x in range(1, 14)}
+        murs = {x: pygame.image.load(f'image/terrain/mur{x}.png') for x in range(1, 14)}
 
         row_count = 0
         for row in data:
@@ -226,7 +226,7 @@ class Spike(pygame.sprite.Sprite):
         self.index = 0
         self.counter = 0
         for num in range(1,3):
-            img = pygame.image.load(f'image/spike{num}.png')
+            img = pygame.image.load(f'image/terrain/spike{num}.png')
             img = pygame.transform.scale(img,(tile_size,tile_size))
             self.imageslist.append(img)
         self.image = self.imageslist[self.index]
@@ -248,7 +248,7 @@ class Enemy(pygame.sprite.Sprite):
         self.index = 0
         self.counter = 0
         for num in range(1,3):
-            img = pygame.image.load(f'image/goomba{num}.png')
+            img = pygame.image.load(f'image/entities/goomba{num}.png')
             img = pygame.transform.scale(img,(30,30))
             self.imageslist.append(img)
         self.image = self.imageslist[self.index]
