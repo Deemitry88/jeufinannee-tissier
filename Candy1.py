@@ -7,7 +7,6 @@ from pygame.locals import *
 pygame.init()
 pygame.mixer.init()
 
-
 clock = pygame.time.Clock()
 fps = 60
 
@@ -17,7 +16,8 @@ screen_height = 600
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('The Celestial Brothers')
 pygame.mixer.music.load("audio/music.wav")
-
+hurtsound = pygame.mixer.Sound("audio/hurt.mp3")
+hurtsound.set_volume(0.5)
 
 # Variables du jeu
 tile_size=25
@@ -62,6 +62,13 @@ class Player():
     def pushed_by(self,direction):
         self.goomba_direction = direction
         self.pushed = True
+
+    def hurt(self):
+        self.invicibility = True
+        hurtsound.play()
+        self.health -= 1
+        print(self.health)
+        self.current = pygame.time.get_ticks()
 
     def update(self):
         #Variables pour les déplacements
@@ -163,10 +170,7 @@ class Player():
                     self.jumped = False
                 
             if pygame.sprite.spritecollide(self,spike_group, False) and self.invicibility == False:
-                self.invicibility = True
-                self.health -= 1
-                print(self.health)
-                self.current = pygame.time.get_ticks()
+                player.hurt()
 
         #Mise à jour des coordonnées du personnage
         self.rect.x += dx
@@ -280,10 +284,7 @@ class Enemy(pygame.sprite.Sprite):
                     if not player.invicibility and not self.dead:
                         player.pushed_by(self.move_direction)
                         player.vel_y = -6
-                        player.invicibility = True
-                        player.health -= 1
-                        print(player.health)
-                        player.current = pygame.time.get_ticks()
+                        player.hurt()
 
 
 world_data = [
