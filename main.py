@@ -17,6 +17,7 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('The Celestial Brothers')
 pygame.mixer.music.load("audio/music.wav")
 hurtsound = pygame.mixer.Sound("audio/hurt.mp3")
+getsound = pygame.mixer.Sound("audio/get.mp3")
 hurtsound.set_volume(0.5)
 
 # Variables du jeu
@@ -211,6 +212,9 @@ class World():
                 if tile == 16:
                     goomba = Enemy(col_count * tile_size, row_count * tile_size)
                     goomba_group.add(goomba)
+                if tile == 17:
+                    berry = Berry(col_count * tile_size, row_count * tile_size)
+                    berry_group.add(berry)
                 col_count += 1
             row_count += 1
 
@@ -240,6 +244,37 @@ class Spike(pygame.sprite.Sprite):
         if self.counter > cooldown*2-1:
             self.counter = 0
         self.image = self.imageslist[self.counter//cooldown]
+
+
+class Berry(pygame.sprite.Sprite):
+    def __init__(self, x,y):
+        pygame.sprite.Sprite.__init__(self)
+        self.imageslist = []
+        self.index = 0
+        self.counter = 0
+        for num in range(1,5):
+            img = pygame.image.load(f'image/entities/berry{num}.png')
+            img = pygame.transform.scale(img,(tile_size*2.5,tile_size))
+            self.imageslist.append(img)
+        self.image = self.imageslist[self.index]
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
+    def update(self):
+        cooldown = 15
+        self.counter += 1
+        if self.counter > cooldown*4-1:
+            self.counter = 0
+        self.image = self.imageslist[self.counter//cooldown]
+        if self.image == self.imageslist[2]:
+            self.rect.y -= 1
+        elif self.image == self.imageslist[0]:
+            self.rect.y += 1
+
+        if player.rect.colliderect(self.rect):
+            berry_group.remove(self)
+            pygame.mixer.Sound.play(getsound)
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -299,7 +334,7 @@ world_data = [
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,17,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,16,0,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -309,13 +344,14 @@ world_data = [
 [0,0,0,0,0,11,12,12,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 
-[3,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,5,0,0,0,6,7,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[3,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,5,0,0,0,6,7,4,5,0,0,0,0,0,0,0,0,0,0,17,0,0,0,0,0,0,0,0,0,0,0],
 [6,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,1,7,0,0,0,6,7,1,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [8,10,0,0,16,0,0,0,0,0,0,16,0,0,0,0,8,9,10,15,15,15,8,10,9,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
 
 player = Player(100, screen_height - 130)
 goomba_group = pygame.sprite.Group()
 spike_group = pygame.sprite.Group()
+berry_group = pygame.sprite.Group()
 world = World(world_data)
 
 run = True
@@ -331,6 +367,8 @@ while run:
     goomba_group.draw(screen)
     spike_group.update()
     spike_group.draw(screen)
+    berry_group.update()
+    berry_group.draw(screen)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
