@@ -17,8 +17,9 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('The Celestial Brothers')
 pygame.mixer.music.load("audio/music.wav")
 hurtsound = pygame.mixer.Sound("audio/hurt.mp3")
-getsound = pygame.mixer.Sound("audio/get.mp3")
 hurtsound.set_volume(0.5)
+getsound = pygame.mixer.Sound("audio/get.mp3")
+getsound.set_volume(0.5)
 
 # Variables du jeu
 tile_size=25
@@ -59,6 +60,7 @@ class Player():
         self.onroof = False
         self.pushed = False
         self.goomba_direction = 0
+        self.points = 0
 
     def pushed_by(self,direction):
         self.goomba_direction = direction
@@ -68,7 +70,6 @@ class Player():
         self.invicibility = True
         hurtsound.play()
         self.health -= 1
-        print(self.health)
         self.current = pygame.time.get_ticks()
 
     def update(self):
@@ -218,6 +219,10 @@ class World():
                 col_count += 1
             row_count += 1
 
+    def ecrire_message(self, message, message_rectangle,couleur):
+        font = pygame.font.SysFont('lato', 40, False)
+        message = font.render(message, True, couleur)
+        screen.blit(message,message_rectangle)
 
     def draw(self):
         for tile in self.tile_list:
@@ -275,6 +280,7 @@ class Berry(pygame.sprite.Sprite):
         if player.rect.colliderect(self.rect):
             berry_group.remove(self)
             pygame.mixer.Sound.play(getsound)
+            player.points += 10
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -314,6 +320,7 @@ class Enemy(pygame.sprite.Sprite):
                     player.vel_y = -10  # effet rebond
                     self.dead = True
                     goomba_group.remove(self)  # ou enemy.kill() si tu utilises Sprite
+                    player.points += 5
                 else:
             # collision sur le côté = dégâts (à adapter selon ton système)
                     if not player.invicibility and not self.dead:
@@ -345,8 +352,8 @@ world_data = [
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 
 [3,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,5,0,0,0,6,7,4,5,0,0,0,0,0,0,0,0,0,0,17,0,0,0,0,0,0,0,0,0,0,0],
-[6,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,1,7,0,0,0,6,7,1,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[8,10,0,0,16,0,0,0,0,0,0,16,0,0,0,0,8,9,10,15,15,15,8,10,9,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
+[6,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,6,7,0,0,0,6,7,1,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[8,10,0,0,16,0,0,0,0,0,0,16,0,0,0,0,8,8,10,15,15,15,8,10,9,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
 
 player = Player(100, screen_height - 130)
 goomba_group = pygame.sprite.Group()
@@ -369,6 +376,9 @@ while run:
     spike_group.draw(screen)
     berry_group.update()
     berry_group.draw(screen)
+
+    world.ecrire_message(f"Health : {player.health}", (10, 10), (255, 0, 0))
+    world.ecrire_message(f"Points : {player.points}", (10, 50), (255, 255, 0))
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
