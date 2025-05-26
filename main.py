@@ -216,6 +216,12 @@ class World():
                 if tile == 17:
                     berry = Berry(col_count * tile_size, row_count * tile_size)
                     berry_group.add(berry)
+                if tile == 18:
+                    platform = Platform(col_count * tile_size, row_count * tile_size, 0, 1)
+                    platform_group.add(platform)
+                if tile == 19:
+                    platform = Platform(col_count * tile_size, row_count * tile_size, 1, 0)
+                    platform_group.add(platform)
                 col_count += 1
             row_count += 1
 
@@ -227,6 +233,27 @@ class World():
     def draw(self):
         for tile in self.tile_list:
             screen.blit(tile[0], tile[1])
+
+class Platform(pygame.sprite.Sprite):
+    def __init__(self, x, y, move_x, move_y):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load('image/terrain/platform.png')
+        self.image = pygame.transform.scale(self.image, (tile_size * 3, tile_size))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.move_counter = 0
+        self.move_direction = 1
+        self.move_x = move_x
+        self.move_y = move_y
+    
+    def update(self):
+        self.rect.x += self.move_direction * self.move_x
+        self.rect.y += self.move_direction * self.move_y
+        self.move_counter += 1
+        if abs(self.move_counter) > 50:
+            self.move_direction *= -1
+            self.move_counter *= -1
 
 class Spike(pygame.sprite.Sprite):
     def __init__(self, x,y):
@@ -359,6 +386,7 @@ player = Player(100, screen_height - 130)
 goomba_group = pygame.sprite.Group()
 spike_group = pygame.sprite.Group()
 berry_group = pygame.sprite.Group()
+platform_group = pygame.sprite.Group()
 world = World(world_data)
 
 run = True
@@ -379,6 +407,8 @@ while run:
 
     world.ecrire_message(f"Health : {player.health}", (10, 10), (255, 0, 0))
     world.ecrire_message(f"Points : {player.points}", (10, 50), (255, 255, 0))
+    platform_group.update()
+    platform_group.draw(screen)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
