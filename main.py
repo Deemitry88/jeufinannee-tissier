@@ -404,11 +404,12 @@ while run:
     spike_group.draw(screen)
     berry_group.update()
     berry_group.draw(screen)
+    platform_group.update()
+    platform_group.draw(screen)
 
     world.ecrire_message(f"Health : {player.health}", (10, 10), (255, 0, 0))
     world.ecrire_message(f"Points : {player.points}", (10, 50), (255, 255, 0))
-    platform_group.update()
-    platform_group.draw(screen)
+
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
