@@ -15,6 +15,7 @@ screen_width = 1200
 screen_height = 600
 
 screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_icon(pygame.image.load('image/misc/icon.png'))
 pygame.display.set_caption('The Celestial Brothers')
 pygame.mixer.music.load("audio/music.mp3")
 pygame.mixer.music.set_volume(0)
@@ -175,13 +176,7 @@ class Player():
 					self.vel_y = 0
 					self.jumped = False
 				
-			if pygame.sprite.spritecollide(self,spike_group, False) and not self.invicibility:
-				player.hurt()
-
-			if pygame.sprite.spritecollide(self, lak_projectile_group, True) and not self.invicibility:
-				player.hurt()
-
-			if pygame.sprite.spritecollide(self, lakitu_group, False) and not self.invicibility:
+			if pygame.sprite.spritecollide(self,spike_group, False) and not self.invicibility or pygame.sprite.spritecollide(self, lak_projectile_group, True) and not self.invicibility or pygame.sprite.spritecollide(self, lakitu_group, False) and not self.invicibility:
 				player.hurt()
 
 			for platform in platform_group:
@@ -232,6 +227,7 @@ class PlayerProjectile(pygame.sprite.Sprite):
 		
 		if pygame.sprite.spritecollide(self, lakitu_group, True):
 				self.kill()
+				player.points += 3
 
 class World():
 	def __init__(self,data):
@@ -349,6 +345,7 @@ class Berry(pygame.sprite.Sprite):
 
 
 	def update(self):
+		global berries_left
 		if not self.disappearing:
 			cooldown = 15
 			self.counter += 1
@@ -365,6 +362,7 @@ class Berry(pygame.sprite.Sprite):
 				self.disappear_counter = 0
 				player.points += 10
 				player.munitions += 10
+				berries_left -= 1
 				pygame.mixer.Sound.play(getsound)
 		else:
 			disappear_cooldown = 3
@@ -416,6 +414,7 @@ class Enemy(pygame.sprite.Sprite):
 				if player.rect.bottom <= self.rect.top + 10 and player.vel_y > 0:
 					player.vel_y = -10  # effet rebond
 					self.dead = True
+					player.points += 2
 					goomba_group.remove(self)  # ou enemy.kill() si tu utilises Sprite
 				else:
 			# collision sur le côté = dégâts (à adapter selon ton système)
@@ -474,13 +473,13 @@ world_data = [
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,17,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[0,0,0,0,0,0,0,0,0,0,0,0,17,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,17,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,17,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,1,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,9,10,0,0,0,0,0,0,0,17,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,16,0,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,18,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,11,12,12,12,12,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -489,10 +488,35 @@ world_data = [
 [0,0,0,0,0,11,12,12,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,18,0,0,0,0,0,0], 
-[3,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,5,0,0,0,6,7,4,5,0,0,0,0,0,0,0,0,0,0,17,0,0,0,0,0,0,0,0,0,0,0],
+[3,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,5,0,0,0,6,7,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [6,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,6,7,0,0,0,6,7,1,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[8,10,0,0,16,0,0,0,0,0,0,16,0,0,0,0,8,8,10,15,15,15,8,10,9,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,15,15,15,15,15,15,15]]
+[8,10,0,0,16,0,0,0,0,0,0,16,0,0,0,0,8,8,10,15,15,15,8,10,9,10,0,16,0,0,0,0,0,16,0,0,0,3,4,5,15,15,15,15,15,15,15,15]]
 
+world_data2 = [
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,17,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,17,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,19,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,11,12,12,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,18,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,3,5,15,15,3,4,4,4,4,5,0,0,0,0,0,0,0,0,0,0,0,0,16,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,6,2,4,4,2,2,2,1,2,7,0,0,0,0,0,0,0,0,0,0,0,0,11,12,12,12,12,13,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,18,0,0,0,6,2,2,2,1,2,2,2,2,7,0,0,18,0,0,0,0,0,0,0,0,0,0,17,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,6,2,2,2,2,2,2,2,2,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,18,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,6,2,2,1,2,2,2,1,2,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,3,4,4,4,5,0,0,0,0,0,0,6,2,2,2,2,2,2,2,2,7,15,15,15,0,0,0,0,0,0,0,0,0,0,15,15,15,15,0,0,0,0,0,0,0],]
 
 player = Player(100, screen_height - 130)
 player_projectile_group = pygame.sprite.Group()
@@ -503,6 +527,8 @@ spike_group = pygame.sprite.Group()
 berry_group = pygame.sprite.Group()
 platform_group = pygame.sprite.Group()
 world = World(world_data)
+berries_left = 3
+current_world = 1
 
 run = True
 pygame.mixer.music.play(-1)
@@ -525,20 +551,40 @@ while run:
 	goomba_group.draw(screen)
 	lak_projectile_group.update()
 	lak_projectile_group.draw(screen)
-	lakitu_group.update()
-	lakitu_group.draw(screen)
 	spike_group.update()
 	spike_group.draw(screen)
 	berry_group.update()
 	berry_group.draw(screen)
 	platform_group.update()
 	platform_group.draw(screen)
+	lakitu_group.update()
+	lakitu_group.draw(screen)
 	player_projectile_group.update()
 	player_projectile_group.draw(screen)
 
 	world.ecrire_message(f"Vie : {player.health}", (10, 10), (255, 0, 0))
 	world.ecrire_message(f"Points : {player.points}", (10, 50), (255, 255, 0))
 	world.ecrire_message(f"Munitions : {player.munitions}", (10, 90), (0, 255, 0))
+
+	if berries_left == 0:
+		current_world += 1
+
+	if current_world == 2:
+		current_world = 3
+		player.rect.x = 100
+		player.rect.y = 500
+		player_projectile_group = pygame.sprite.Group()
+		lakitu_group = pygame.sprite.Group()
+		lak_projectile_group = pygame.sprite.Group()
+		goomba_group = pygame.sprite.Group()
+		spike_group = pygame.sprite.Group()
+		berry_group = pygame.sprite.Group()
+		platform_group = pygame.sprite.Group()
+		world = World(world_data2)
+		berries_left = 3
+
+	if current_world == 4:
+		run = False
 
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
@@ -549,7 +595,7 @@ while run:
 					projectile = PlayerProjectile(player.rect.centerx, player.rect.top)
 					player_projectile_group.add(projectile)
 					player.munitions -= 1
-		
+	
 
 	pygame.display.update()
 
