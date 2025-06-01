@@ -1,6 +1,7 @@
 # Partie 4 : Ajout des collisions
 
 import pygame
+import random
 import time
 from pygame.locals import *
 
@@ -62,6 +63,7 @@ class Player():
 		self.pushed = False
 		self.goomba_direction = 0
 		self.points = 0
+		self.munitions = 10
 
 	def pushed_by(self,direction):
 		self.goomba_direction = direction
@@ -173,7 +175,13 @@ class Player():
 					self.vel_y = 0
 					self.jumped = False
 				
-			if pygame.sprite.spritecollide(self,spike_group, False) and self.invicibility == False:
+			if pygame.sprite.spritecollide(self,spike_group, False) and not self.invicibility:
+				player.hurt()
+
+			if pygame.sprite.spritecollide(self, lak_projectile_group, True) and not self.invicibility:
+				player.hurt()
+
+			if pygame.sprite.spritecollide(self, lakitu_group, False) and not self.invicibility:
 				player.hurt()
 
 			for platform in platform_group:
@@ -209,6 +217,22 @@ class Player():
 		#Trace le personnage sur l'écran
 		screen.blit(self.image,self.rect)
 
+class PlayerProjectile(pygame.sprite.Sprite):
+	def __init__(self, x, y):
+		pygame.sprite.Sprite.__init__(self)
+		self.image = pygame.image.load(f'image/entities/mar_projectile.png')
+		self.image = pygame.transform.scale(self.image, (tile_size, tile_size))
+		self.rect = self.image.get_rect(center=(x, y))
+		self.speed = 7
+
+	def update(self):
+		self.rect.y -= self.speed
+		if self.rect.bottom < 0:
+			self.kill()
+		
+		if pygame.sprite.spritecollide(self, lakitu_group, True):
+				self.kill()
+
 class World():
 	def __init__(self,data):
 		self.tile_list = []
@@ -241,6 +265,9 @@ class World():
 				if tile == 19:
 					platform = Platform(col_count * tile_size, row_count * tile_size, 1, 0)
 					platform_group.add(platform)
+				if tile == 20:
+					lakitu = Enemy2(col_count * tile_size, row_count * tile_size)
+					lakitu_group.add(lakitu)
 				col_count += 1
 			row_count += 1
 
@@ -327,6 +354,7 @@ class Berry(pygame.sprite.Sprite):
 			berry_group.remove(self)
 			pygame.mixer.Sound.play(getsound)
 			player.points += 10
+			player.munitions += 10
 
 class Enemy(pygame.sprite.Sprite):
 	def __init__(self, x, y):
@@ -359,7 +387,7 @@ class Enemy(pygame.sprite.Sprite):
 		if abs(self.move_counter) > 25:
 			self.move_direction *= -1
 			self.move_counter = 0
-		for enemy in goomba_group:
+		for _ in goomba_group:
 			if player.rect.colliderect(self.rect):
 		# si le joueur touche le haut de l'ennemi et est en train de tomber
 				if player.rect.bottom <= self.rect.top + 10 and player.vel_y > 0:
@@ -374,6 +402,48 @@ class Enemy(pygame.sprite.Sprite):
 						player.vel_y = -6
 						player.hurt()
 
+class Enemy2(pygame.sprite.Sprite):
+	def __init__(self, x, y):
+		pygame.sprite.Sprite.__init__(self)
+		self.imageslist = []
+		self.index = 0
+		self.counter = 0
+		self.image = pygame.image.load(f'image/entities/lakitu.png')
+		self.image = pygame.transform.scale(self.image, (48, 62))
+		self.rect = self.image.get_rect()
+		self.rect.x = x
+		self.rect.y = y
+		self.move_counter = 0
+		self.dead = False
+		self.last_throw = pygame.time.get_ticks()
+		self.throw_delay = random.randint(1000, 2000)  # 1-2 seconds
+
+	def update(self):
+		self.rect.x -= 3
+		if self.rect.right < 0:
+			self.kill()
+		# Throw projectile
+		now = pygame.time.get_ticks()
+		if now - self.last_throw > self.throw_delay:
+			projectile = LakituProjectile(self.rect.centerx, self.rect.bottom)
+			lak_projectile_group.add(projectile)
+			self.last_throw = now
+			self.throw_delay = random.randint(1000, 2000)
+
+class LakituProjectile(pygame.sprite.Sprite):
+	def __init__(self, x, y):
+		pygame.sprite.Sprite.__init__(self)
+		self.image = pygame.image.load(f'image/entities/lak_projectile.png')
+		self.image = pygame.transform.scale(self.image, (tile_size, tile_size))
+		self.rect = self.image.get_rect()
+		self.rect.x = x-25
+		self.rect.y = y-30
+		self.speed = 3
+
+	def update(self):
+		self.rect.y += self.speed
+		if self.rect.top > screen_height:
+			self.kill()
 
 world_data = [
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -402,6 +472,9 @@ world_data = [
 [8,10,0,0,16,0,0,0,0,0,0,16,0,0,0,0,8,8,10,15,15,15,8,10,9,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,15,15,15,15,15,15,15]]
 
 player = Player(100, screen_height - 130)
+player_projectile_group = pygame.sprite.Group()
+lakitu_group = pygame.sprite.Group()
+lak_projectile_group = pygame.sprite.Group()
 goomba_group = pygame.sprite.Group()
 spike_group = pygame.sprite.Group()
 berry_group = pygame.sprite.Group()
@@ -410,28 +483,50 @@ world = World(world_data)
 
 run = True
 pygame.mixer.music.play(-1)
+next_lakitu_time = pygame.time.get_ticks() + random.randint(2000, 4000)  # 2-4 seconds
 
 while run:
 	clock.tick(fps)
 	screen.blit(bg_img1,(0,0))
 
+	now = pygame.time.get_ticks()
+	if now > next_lakitu_time:
+		y = random.randint(100, screen_height - 100)
+		lakitu = Enemy2(screen_width, y)
+		lakitu_group.add(lakitu)
+		next_lakitu_time = now + random.randint(10000, 15000)  # next in 2-4 seconds
+
 	world.draw()
 	player.update()
 	goomba_group.update()
 	goomba_group.draw(screen)
+	lak_projectile_group.update()
+	lak_projectile_group.draw(screen)
+	lakitu_group.update()
+	lakitu_group.draw(screen)
 	spike_group.update()
 	spike_group.draw(screen)
 	berry_group.update()
 	berry_group.draw(screen)
 	platform_group.update()
 	platform_group.draw(screen)
+	player_projectile_group.update()
+	player_projectile_group.draw(screen)
 
-	world.ecrire_message(f"Health : {player.health}", (10, 10), (255, 0, 0))
+	world.ecrire_message(f"Vie : {player.health}", (10, 10), (255, 0, 0))
 	world.ecrire_message(f"Points : {player.points}", (10, 50), (255, 255, 0))
+	world.ecrire_message(f"Munitions : {player.munitions}", (10, 90), (0, 255, 0))
 
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			run = False
+		if event.type == pygame.KEYDOWN:
+			if event.key == pygame.K_f:
+				if player.munitions > 0:
+					projectile = PlayerProjectile(player.rect.centerx, player.rect.top)
+					player_projectile_group.add(projectile)
+					player.munitions -= 1
+		
 
 	pygame.display.update()
 
