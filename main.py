@@ -16,7 +16,7 @@ screen_height = 600
 
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('The Celestial Brothers')
-pygame.mixer.music.load("audio/music.wav")
+pygame.mixer.music.load("audio/music.mp3")
 hurtsound = pygame.mixer.Sound("audio/hurt.mp3")
 hurtsound.set_volume(0.5)
 getsound = pygame.mixer.Sound("audio/get.mp3")
