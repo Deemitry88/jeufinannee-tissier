@@ -2,7 +2,7 @@
 
 import pygame
 import random
-import time
+import scores
 from pygame.locals import *
 
 pygame.init()
@@ -17,6 +17,7 @@ screen_height = 600
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('The Celestial Brothers')
 pygame.mixer.music.load("audio/music.mp3")
+pygame.mixer.music.set_volume(0)
 hurtsound = pygame.mixer.Sound("audio/hurt.mp3")
 hurtsound.set_volume(0.5)
 getsound = pygame.mixer.Sound("audio/get.mp3")
@@ -551,5 +552,10 @@ while run:
 		
 
 	pygame.display.update()
+
+if run == False:
+    pygame.quit()
+    scores.sendscore(player.points)
+    scores.show_score_window()
 
 pygame.quit()
