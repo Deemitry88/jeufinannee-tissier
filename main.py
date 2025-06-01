@@ -17,7 +17,6 @@ screen_height = 600
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('The Celestial Brothers')
 pygame.mixer.music.load("audio/music.wav")
-pygame.mixer.music.set_volume(0)
 hurtsound = pygame.mixer.Sound("audio/hurt.mp3")
 hurtsound.set_volume(0.5)
 getsound = pygame.mixer.Sound("audio/get.mp3")
@@ -338,23 +337,46 @@ class Berry(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect()
 		self.rect.x = x
 		self.rect.y = y
+		self.disappearing = False
+		self.disappear_images = []
+		self.disappear_counter = 0
+
+		for num in range(1, 8):
+			img = pygame.image.load(f'image/entities/berry_dis{num}.png')
+			img = pygame.transform.scale(img, (tile_size*2.5, tile_size))
+			self.disappear_images.append(img)
+
 
 	def update(self):
-		cooldown = 15
-		self.counter += 1
-		if self.counter > cooldown*4-1:
-			self.counter = 0
-		self.image = self.imageslist[self.counter//cooldown]
-		if self.image == self.imageslist[2]:
-			self.rect.y -= 1
-		elif self.image == self.imageslist[0]:
-			self.rect.y += 1
+		if not self.disappearing:
+			cooldown = 15
+			self.counter += 1
+			if self.counter > cooldown*4-1:
+				self.counter = 0
+			self.image = self.imageslist[self.counter//cooldown]
+			if self.image == self.imageslist[2]:
+				self.rect.y -= 1
+			elif self.image == self.imageslist[0]:
+				self.rect.y += 1
 
-		if player.rect.colliderect(self.rect):
-			berry_group.remove(self)
-			pygame.mixer.Sound.play(getsound)
-			player.points += 10
-			player.munitions += 10
+			if player.rect.colliderect(self.rect):
+				self.disappearing = True
+				self.disappear_counter = 0
+				player.points += 10
+				player.munitions += 10
+				pygame.mixer.Sound.play(getsound)
+		else:
+			disappear_cooldown = 3
+			last_frame_hold = 18 
+			frame = self.disappear_counter // disappear_cooldown
+			if frame < len(self.disappear_images) - 1:
+				self.image = self.disappear_images[frame]
+				self.disappear_counter += 1
+			else:
+				self.image = self.disappear_images[-1]
+				self.disappear_counter += 1
+				if self.disappear_counter >= (len(self.disappear_images)-1)*disappear_cooldown + last_frame_hold:
+					berry_group.remove(self)
 
 class Enemy(pygame.sprite.Sprite):
 	def __init__(self, x, y):
@@ -394,7 +416,6 @@ class Enemy(pygame.sprite.Sprite):
 					player.vel_y = -10  # effet rebond
 					self.dead = True
 					goomba_group.remove(self)  # ou enemy.kill() si tu utilises Sprite
-					player.points += 5
 				else:
 			# collision sur le côté = dégâts (à adapter selon ton système)
 					if not player.invicibility and not self.dead:
@@ -416,13 +437,13 @@ class Enemy2(pygame.sprite.Sprite):
 		self.move_counter = 0
 		self.dead = False
 		self.last_throw = pygame.time.get_ticks()
-		self.throw_delay = random.randint(1000, 2000)  # 1-2 seconds
+		self.throw_delay = random.randint(1000, 2000)
 
 	def update(self):
 		self.rect.x -= 3
 		if self.rect.right < 0:
 			self.kill()
-		# Throw projectile
+
 		now = pygame.time.get_ticks()
 		if now - self.last_throw > self.throw_delay:
 			projectile = LakituProjectile(self.rect.centerx, self.rect.bottom)
@@ -460,7 +481,7 @@ world_data = [
 [0,0,0,0,0,0,0,0,0,0,0,0,17,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,17,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[0,0,0,0,0,0,0,0,0,0,16,0,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,16,0,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,18,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,11,12,12,12,12,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11,12,13,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,19,0,0,0,0,0,0,0,0],
@@ -470,6 +491,7 @@ world_data = [
 [3,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,5,0,0,0,6,7,4,5,0,0,0,0,0,0,0,0,0,0,17,0,0,0,0,0,0,0,0,0,0,0],
 [6,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,6,7,0,0,0,6,7,1,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [8,10,0,0,16,0,0,0,0,0,0,16,0,0,0,0,8,8,10,15,15,15,8,10,9,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,15,15,15,15,15,15,15]]
+
 
 player = Player(100, screen_height - 130)
 player_projectile_group = pygame.sprite.Group()
@@ -483,7 +505,7 @@ world = World(world_data)
 
 run = True
 pygame.mixer.music.play(-1)
-next_lakitu_time = pygame.time.get_ticks() + random.randint(2000, 4000)  # 2-4 seconds
+next_lakitu_time = pygame.time.get_ticks() + random.randint(2000, 4000) 
 
 while run:
 	clock.tick(fps)
@@ -494,7 +516,7 @@ while run:
 		y = random.randint(100, screen_height - 100)
 		lakitu = Enemy2(screen_width, y)
 		lakitu_group.add(lakitu)
-		next_lakitu_time = now + random.randint(10000, 15000)  # next in 2-4 seconds
+		next_lakitu_time = now + random.randint(10000, 15000) 
 
 	world.draw()
 	player.update()
@@ -521,7 +543,7 @@ while run:
 		if event.type == pygame.QUIT:
 			run = False
 		if event.type == pygame.KEYDOWN:
-			if event.key == pygame.K_f:
+			if event.key == pygame.K_z:
 				if player.munitions > 0:
 					projectile = PlayerProjectile(player.rect.centerx, player.rect.top)
 					player_projectile_group.add(projectile)
